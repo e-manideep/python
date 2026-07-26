@@ -1,0 +1,16 @@
+{
+  "name": "claimsetu",
+  "private": true,
+  "version": "1.0.0",
+  "description": "ClaimSetu — India's AI-native health insurance claims platform",
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix web && npm run db:setup",
+    "db:setup": "npm run --prefix server prisma:migrate && npm run --prefix server db:seed",
+    "dev": "concurrently -n server,web -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix web\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:web": "npm run dev --prefix web"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}

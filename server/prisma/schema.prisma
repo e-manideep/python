@@ -1,0 +1,162 @@
+// ClaimSetu — data model for a health insurance claims platform.
+// SQLite so the whole thing runs locally with zero external services.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite has no native enum type, so these are plain strings constrained by
+// zod validation in the API layer. Valid values, for reference:
+//   Role:        MEMBER | PROVIDER | INSURER_OPS | ADMIN
+//   ClaimType:   CASHLESS | REIMBURSEMENT
+//   ClaimStatus: SUBMITTED | AI_TRIAGED | UNDER_REVIEW | QUERY_RAISED |
+//                APPROVED | PARTIALLY_APPROVED | REJECTED | SETTLED
+//   DocType:     DISCHARGE_SUMMARY | HOSPITAL_BILL | PRESCRIPTION |
+//                LAB_REPORT | ID_PROOF | PRE_AUTH_FORM | OTHER
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         String
+  createdAt    DateTime @default(now())
+
+  member     Member?
+  providerOf Provider?
+}
+
+model Member {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  healthId  String   @unique // ABHA-style unique health identifier
+  name      String
+  dob       DateTime
+  gender    String
+  phone     String
+  city      String
+  createdAt DateTime @default(now())
+
+  policies Policy[]
+  chats    ChatMessage[]
+}
+
+model Policy {
+  id              String   @id @default(cuid())
+  policyNumber    String   @unique
+  memberId        String
+  member          Member   @relation(fields: [memberId], references: [id])
+  insurer         String
+  planName        String
+  planTier        String
+  sumInsured      Int
+  premium         Int
+  roomRentLimit   String
+  copayPercent    Int
+  startDate       DateTime
+  endDate         DateTime
+  status          String   @default("ACTIVE")
+  networkHospitals String  // JSON string array
+  policyWording   String   // plain-text policy terms used as grounding for the AI assistant
+  createdAt       DateTime @default(now())
+
+  dependents Dependent[]
+  claims     Claim[]
+}
+
+model Dependent {
+  id       String @id @default(cuid())
+  policyId String
+  policy   Policy @relation(fields: [policyId], references: [id])
+  name     String
+  relation String
+  dob      DateTime
+}
+
+model Provider {
+  id           String  @id @default(cuid())
+  userId       String? @unique
+  user         User?   @relation(fields: [userId], references: [id])
+  providerCode String  @unique
+  name         String
+  city         String
+  tier         String
+  networkStatus String @default("IN_NETWORK")
+  specialties  String // JSON string array
+
+  claims Claim[]
+}
+
+model Claim {
+  id              String   @id @default(cuid())
+  claimNumber     String   @unique
+  policyId        String
+  policy          Policy   @relation(fields: [policyId], references: [id])
+  providerId      String
+  provider        Provider @relation(fields: [providerId], references: [id])
+  type            String
+  diagnosis       String
+  icdCode         String
+  admissionDate   DateTime
+  dischargeDate   DateTime?
+  claimedAmount   Int
+  approvedAmount  Int?
+  status          String @default("SUBMITTED")
+
+  aiSummary        String? // JSON blob: {summary, keyFacts[], flags[]}
+  aiRisk           String? // JSON blob: {riskScore, riskLevel, reasons[]}
+  aiRecommendation String? // JSON blob: {recommendation, approvedAmount, justification, clauses[]}
+
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents     ClaimDocument[]
+  statusHistory ClaimStatusHistory[]
+  queries       ClaimQuery[]
+}
+
+model ClaimDocument {
+  id            String   @id @default(cuid())
+  claimId       String
+  claim         Claim    @relation(fields: [claimId], references: [id])
+  docType       String
+  fileName      String
+  extractedText String
+  uploadedAt    DateTime @default(now())
+}
+
+model ClaimStatusHistory {
+  id        String   @id @default(cuid())
+  claimId   String
+  claim     Claim    @relation(fields: [claimId], references: [id])
+  status    String
+  note      String
+  actorRole String
+  actorName String
+  createdAt DateTime @default(now())
+}
+
+model ClaimQuery {
+  id             String   @id @default(cuid())
+  claimId        String
+  claim          Claim    @relation(fields: [claimId], references: [id])
+  question       String
+  memberResponse String?
+  resolved       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  memberId  String
+  member    Member   @relation(fields: [memberId], references: [id])
+  role      String // "user" | "assistant"
+  content   String
+  createdAt DateTime @default(now())
+}

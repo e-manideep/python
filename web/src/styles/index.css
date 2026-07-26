@@ -1,0 +1,34 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+@layer components {
+  .input {
+    @apply w-full rounded-lg border border-line px-3 py-2 text-sm text-ink focus:border-teal focus:outline-none focus:ring-1 focus:ring-teal;
+  }
+}
+
+body {
+  font-family: "Inter", sans-serif;
+}
+
+::selection {
+  background: #0f6e6333;
+}
+
+/* Chunky, quiet scrollbar so ops screens with long lists feel controlled. */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d8d5cb;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c7c3b6;
+}

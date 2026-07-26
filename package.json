@@ -4,8 +4,9 @@
   "version": "1.0.0",
   "description": "ClaimSetu — India's AI-native health insurance claims platform",
   "scripts": {
-    "setup": "npm install --prefix server && npm install --prefix web && npm run db:setup",
-    "db:setup": "npm run --prefix server prisma:migrate && npm run --prefix server db:seed",
+    "setup": "npm install && npm install --prefix server && npm install --prefix web && npm run ensure-env && npm run db:setup",
+    "ensure-env": "node -e \"const fs=require('fs');if(!fs.existsSync('server/.env'))fs.copyFileSync('server/.env.example','server/.env')\"",
+    "db:setup": "npm run --prefix server prisma:migrate",
     "dev": "concurrently -n server,web -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix web\"",
     "dev:server": "npm run dev --prefix server",
     "dev:web": "npm run dev --prefix web"

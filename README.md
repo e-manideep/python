@@ -10,6 +10,15 @@ It's the insurance module of a broader "healthcare coordination OS" concept; thi
 builds that one module all the way down to a real database and a real UI, rather than
 another pitch deck.
 
+## Two products in this repo
+
+This directory (`server/` + `web/`) is **ClaimSetu**, the insurance claims platform.
+There's a second, separate product in [`nadi/`](./nadi) — **Nadi**, an AI-native
+clinical documentation and decision-support workspace, which took the product in a
+different direction (see [`nadi/STRATEGY.md`](./nadi/STRATEGY.md) for why). Nadi is
+fully self-contained with its own README and run instructions; nothing here depends
+on it.
+
 ## Why this shape
 
 Health insurance claims in India move through a well-defined lifecycle — submission,

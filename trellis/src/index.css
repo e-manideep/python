@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Fraunces", "Iowan Old Style", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  /* Brand: deep ink + bronze accent. Score semantics stay separate (below). */
+  --color-ink-950: #0b0e0f;
+  --color-ink-900: #12181a;
+  --color-ink-800: #1c2427;
+  --color-ink-700: #2a3438;
+  --color-ink-600: #3d4a4f;
+  --color-ink-500: #5b6a6f;
+  --color-ink-400: #8a9598;
+  --color-ink-300: #b7bfc1;
+  --color-ink-200: #dde1e2;
+  --color-ink-100: #eef0f0;
+  --color-ink-50: #f7f7f6;
+
+  --color-bronze-900: #4a3616;
+  --color-bronze-800: #6b4d1f;
+  --color-bronze-700: #8f6726;
+  --color-bronze-600: #b3822e;
+  --color-bronze-500: #c99a3f;
+  --color-bronze-400: #d9b568;
+  --color-bronze-300: #e7cd97;
+  --color-bronze-200: #f0e0bb;
+  --color-bronze-100: #f8f0dc;
+  --color-bronze-50: #fcf8ef;
+
+  --color-moss-900: #17381f;
+  --color-moss-700: #2c6b3a;
+  --color-moss-600: #38854a;
+  --color-moss-500: #479c5d;
+
+  /* Trellis Score bands — validated for CVD + contrast separation (see scripts/verify) */
+  --color-score-excellent: #1f8b4c;
+  --color-score-excellent-bg: #e9f7ef;
+  --color-score-good: #2563a8;
+  --color-score-good-bg: #e8f0f9;
+  --color-score-fair: #92660f;
+  --color-score-fair-chart: #c8901a;
+  --color-score-fair-bg: #faf1dc;
+  --color-score-risk: #b8241a;
+  --color-score-risk-bg: #fbeae8;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink-50);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-bronze-300);
+  color: var(--color-ink-950);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* thin, unobtrusive scrollbars for kanban/table overflow rails */
+.scroll-thin::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+.scroll-thin::-webkit-scrollbar-thumb {
+  background: var(--color-ink-200);
+  border-radius: 999px;
+}
+.scroll-thin::-webkit-scrollbar-track {
+  background: transparent;
+}

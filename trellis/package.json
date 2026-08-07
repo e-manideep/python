@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.app.json",
-    "verify": "tsx scripts/sanity.ts"
+    "verify": "tsx scripts/sanity.ts",
+    "bundle:single-file": "vite build && node scripts/bundle-artifact.mjs dist/trellis-standalone.html"
   },
   "dependencies": {
     "clsx": "^2.1.1",

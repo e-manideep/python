@@ -1,8 +1,12 @@
 import type { ReactNode } from "react";
 import clsx from "clsx";
 
-export function Card({ children, className, padded = true }: { children: ReactNode; className?: string; padded?: boolean }) {
-  return <div className={clsx("rounded-2xl border border-ink-100 bg-white", padded && "p-5 sm:p-6", className)}>{children}</div>;
+export function Card({ children, className, padded = true, id }: { children: ReactNode; className?: string; padded?: boolean; id?: string }) {
+  return (
+    <div id={id} className={clsx("rounded-2xl border border-ink-100 bg-white", padded && "p-5 sm:p-6", className)}>
+      {children}
+    </div>
+  );
 }
 
 export function SectionHeading({ eyebrow, title, description, action }: { eyebrow?: string; title: string; description?: string; action?: ReactNode }) {

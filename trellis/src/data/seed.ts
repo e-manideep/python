@@ -288,7 +288,7 @@ export function generateDataset(seed: number = SEED, now: Date = new Date()): Tr
     const residentId = `res-${rSeq++}`;
     const leaseStartMonthsAgo = rng.int(1, 20);
     const startDate = isoDate(-leaseStartMonthsAgo * 30 - rng.int(0, 25));
-    const endDate = isoDate(-leaseStartMonthsAgo * 30 - rng.int(0, 25) + 335, new Date(startDate));
+    const endDate = isoDate(335, new Date(startDate)); // ~11-month term, standard for Indian residential leases
     const leaseId = `lease-${lSeq++}`;
 
     residents.push({ id: residentId, name, phone: `+91 9${rng.int(100000000, 999999999)}`, email: `${name.toLowerCase().replace(/\s/g, ".")}@mailbox.example`, unitId: unit.id, moveInDate: startDate });

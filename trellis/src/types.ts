@@ -235,7 +235,7 @@ export type InsightSeverity = "info" | "watch" | "action";
 
 export interface Insight {
   id: string;
-  category: "Rent Optimization" | "Maintenance Risk" | "Occupancy Forecast" | "Vendor Performance" | "Compliance" | "Portfolio";
+  category: "Rent Optimization" | "Maintenance Risk" | "Occupancy Forecast" | "Renewal Risk" | "Vendor Performance" | "Compliance" | "Capital Planning" | "Sustainability" | "Portfolio";
   severity: InsightSeverity;
   propertyId: string | null;
   vendorId: string | null;

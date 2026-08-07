@@ -7,8 +7,14 @@ import { Card, Pill, SectionHeading, StatTile } from "../components/ui";
 import { ScoreBadge } from "../components/ScoreBadge";
 import { AreaTrendChart } from "../components/charts/AreaTrendChart";
 import { DistributionBar } from "../components/charts/DistributionBar";
+import { SimpleBarChart } from "../components/charts/SimpleBarChart";
 import { generateAllInsights } from "../lib/aiInsights";
 import { InsightRow } from "../components/InsightRow";
+import { leaseExpirationLadder } from "../lib/leaseRenewal";
+import { portfolioCapexForecast } from "../lib/capitalPlanning";
+import { portfolioSustainability } from "../lib/sustainability";
+import { t12Statement } from "../lib/financialStatements";
+import { T12StatementView } from "../components/T12StatementView";
 
 type SortKey = "score" | "name" | "occupancy" | "noiMargin";
 
@@ -23,6 +29,15 @@ export function Portfolio() {
   const cities = cityBreakdown(dataset);
   const scored = scoredProperties(dataset);
   const insights = useMemo(() => generateAllInsights(dataset).slice(0, 5), []);
+  const ladder = useMemo(() => leaseExpirationLadder(dataset), []);
+  const maxConcentration = useMemo(() => {
+    const totalLeases = dataset.leases.filter((l) => l.status !== "Ended").length;
+    return Math.max(...ladder.map((m) => (totalLeases ? (m.leaseCount / totalLeases) * 100 : 0)));
+  }, [ladder]);
+  const capexForecast = useMemo(() => portfolioCapexForecast(dataset), []);
+  const total5yrCapex = useMemo(() => capexForecast.reduce((s, y) => s + y.totalCost, 0), [capexForecast]);
+  const sustainability = useMemo(() => portfolioSustainability(dataset), []);
+  const portfolioT12 = useMemo(() => t12Statement(dataset), []);
 
   const rows = useMemo(() => {
     let r = scored;
@@ -94,6 +109,40 @@ export function Portfolio() {
         </div>
       </Card>
 
+      <div className="grid lg:grid-cols-3 gap-5 mb-8">
+        <Card className="lg:col-span-2">
+          <SectionHeading title="Lease Expiration Ladder" description="Active leases expiring over the next 12 months, portfolio-wide." />
+          <SimpleBarChart
+            data={ladder.map((m) => ({ label: m.label, value: m.leaseCount, tooltip: `${m.leaseCount} leases · ${formatINRCompact(m.revenueAtRisk)}/mo · ${m.avgRenewalProbability.toFixed(0)}% avg renewal probability` }))}
+            color="var(--color-ink-700)"
+            valueFormatter={(v) => v.toFixed(0)}
+          />
+          <p className="text-xs text-ink-500 mt-3">
+            Peak month concentration: <span className="font-mono font-semibold text-ink-800">{maxConcentration.toFixed(1)}%</span> of the active lease book —{" "}
+            {maxConcentration > 12 ? "above the 12% risk threshold, worth staggering future terms." : "comfortably within the 12% risk threshold."}
+          </p>
+        </Card>
+        <Card>
+          <SectionHeading title="5-Year Capital Plan" description="Estimated major system replacement cost, portfolio-wide." />
+          <SimpleBarChart data={capexForecast.map((y) => ({ label: String(y.year), value: y.totalCost, tooltip: `${formatINRCompact(y.totalCost)} · ${y.items.length} item(s)` }))} color="var(--color-bronze-600)" valueFormatter={(v) => formatINRCompact(v, 0)} height={220} />
+          <p className="text-xs text-ink-500 mt-3">
+            {formatINRCompact(total5yrCapex)} in projected capital needs over the next 5 years across the portfolio.
+          </p>
+        </Card>
+      </div>
+
+      <Card className="mb-8">
+        <SectionHeading title="Sustainability" description="Trellis Sustainability Index — kept separate from the operating score, mirroring how institutional ESG reporting works." />
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          <StatTile label="Portfolio Index" value={`${sustainability.avgScore} / 100`} />
+          <StatTile label="Est. Carbon Footprint" value={`${formatNumber(sustainability.totalCarbonTonnes)} tCO2e/yr`} sub="Common-area electricity, engineering estimate" />
+          <StatTile label="Green Certified" value={formatPct(sustainability.certifiedPct, 0)} sub="IGBC Certified or better" />
+          {sustainability.byCity.map((c) => (
+            <StatTile key={c.city.id} label={`${c.city.name} Index`} value={`${c.avgScore} / 100`} sub={`${formatNumber(c.carbonTonnes)} tCO2e/yr`} />
+          ))}
+        </div>
+      </Card>
+
       <Card className="mb-8">
         <SectionHeading
           title="Trellis Intelligence — top signals"
@@ -151,6 +200,11 @@ export function Portfolio() {
             </tbody>
           </table>
         </div>
+      </Card>
+
+      <Card className="mt-8">
+        <SectionHeading title="Portfolio Operating Statement" description="Trailing 12 months, all properties combined. Each property also has its own full statement and Rent Roll on its detail page." />
+        <T12StatementView statement={portfolioT12} title="Portfolio" filename="trellis-portfolio-t12.csv" />
       </Card>
     </div>
   );

@@ -13,6 +13,21 @@ const COMPARISON = [
   { who: "Facility Management Firms", does: "Runs maintenance and vendors for large commercial buildings.", gap: "Siloed per contract — no unified data or score across an owner's portfolio." },
 ];
 
+type Capability = "yes" | "partial" | "no";
+const CAP_LABEL: Record<Capability, string> = { yes: "Yes", partial: "Partial", no: "No" };
+const CAP_CLASS: Record<Capability, string> = { yes: "text-score-good", partial: "text-score-fair", no: "text-score-risk" };
+
+const CAPABILITY_MATRIX: { capability: string; trellis: Capability; enterprise: Capability; midmarket: Capability; facilityMgmt: Capability }[] = [
+  { capability: "Full-stack field operations (not just software)", trellis: "yes", enterprise: "no", midmarket: "no", facilityMgmt: "yes" },
+  { capability: "Investor-grade financial statements (Rent Roll, T12)", trellis: "yes", enterprise: "yes", midmarket: "partial", facilityMgmt: "no" },
+  { capability: "Comp-based rent pricing intelligence", trellis: "yes", enterprise: "yes", midmarket: "partial", facilityMgmt: "no" },
+  { capability: "Lease renewal risk & occupancy forecasting", trellis: "yes", enterprise: "partial", midmarket: "partial", facilityMgmt: "no" },
+  { capability: "Capital planning & reserve-fund forecasting", trellis: "yes", enterprise: "partial", midmarket: "no", facilityMgmt: "partial" },
+  { capability: "Sustainability / ESG index", trellis: "yes", enterprise: "partial", midmarket: "no", facilityMgmt: "partial" },
+  { capability: "Unified owner + resident + vendor + ops portal", trellis: "yes", enterprise: "partial", midmarket: "yes", facilityMgmt: "no" },
+  { capability: "Single transparent cross-portfolio performance score", trellis: "yes", enterprise: "no", midmarket: "no", facilityMgmt: "no" },
+];
+
 const FLYWHEEL = ["More Assets", "More Operations", "More Data", "Better AI", "Better Decisions", "Higher Asset Performance"];
 
 const ROADMAP = [
@@ -124,6 +139,48 @@ export function Landing() {
             </Card>
           </div>
         </div>
+      </section>
+
+      {/* Capability matrix */}
+      <section className="max-w-7xl mx-auto px-5 sm:px-8 py-20">
+        <div className="text-xs font-semibold uppercase tracking-wider text-bronze-700 mb-3">A fair look at the competitive landscape</div>
+        <h2 className="font-display text-3xl text-ink-950 max-w-2xl mb-3">Where the category leaders are actually strong — and where nobody else covers the whole board.</h2>
+        <p className="text-ink-500 max-w-2xl mb-10">
+          Enterprise PM/accounting software (Yardi, MRI-class) and mid-market resident-experience platforms (AppFolio,
+          Entrata-class) are both genuinely strong at what they do — this isn't a claim that Trellis beats them on every
+          axis. It's that nobody combines full-stack operations, institutional-grade reporting, and a single transparent
+          score in one place.
+        </p>
+        <Card padded={false} className="overflow-hidden">
+          <div className="overflow-x-auto scroll-thin">
+            <table className="w-full text-sm min-w-[760px]">
+              <thead>
+                <tr className="text-left text-xs text-ink-500 uppercase tracking-wide border-b border-ink-100">
+                  <th className="py-3 px-5 font-medium">Capability</th>
+                  <th className="py-3 px-3 font-medium text-center">Trellis</th>
+                  <th className="py-3 px-3 font-medium text-center">Enterprise PM/Accounting<br /><span className="normal-case font-normal text-ink-400">(Yardi, MRI-class)</span></th>
+                  <th className="py-3 px-3 font-medium text-center">Mid-Market PM<br /><span className="normal-case font-normal text-ink-400">(AppFolio, Entrata-class)</span></th>
+                  <th className="py-3 px-3 font-medium text-center">Facility Management Firms</th>
+                </tr>
+              </thead>
+              <tbody>
+                {CAPABILITY_MATRIX.map((row) => (
+                  <tr key={row.capability} className="border-b border-ink-100 last:border-0">
+                    <td className="py-3 px-5 text-ink-800">{row.capability}</td>
+                    <td className={`py-3 px-3 text-center font-semibold ${CAP_CLASS[row.trellis]}`}>{CAP_LABEL[row.trellis]}</td>
+                    <td className={`py-3 px-3 text-center ${CAP_CLASS[row.enterprise]}`}>{CAP_LABEL[row.enterprise]}</td>
+                    <td className={`py-3 px-3 text-center ${CAP_CLASS[row.midmarket]}`}>{CAP_LABEL[row.midmarket]}</td>
+                    <td className={`py-3 px-3 text-center ${CAP_CLASS[row.facilityMgmt]}`}>{CAP_LABEL[row.facilityMgmt]}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+        <p className="text-xs text-ink-400 mt-3">
+          Based on publicly documented product capabilities as of this analysis, categorized by platform type rather than
+          naming individual vendors' current roadmaps, which change frequently.
+        </p>
       </section>
 
       {/* Trellis Score */}

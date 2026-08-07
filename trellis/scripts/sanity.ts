@@ -2,6 +2,11 @@ import { generateDataset } from "../src/data/seed";
 import { computeTrellisScore } from "../src/lib/trellisScore";
 import { monthlyFinancials, portfolioMonthlyFinancials, assetValue, portfolioAssetValue, currentOccupancyPct } from "../src/lib/financials";
 import { generateAllInsights } from "../src/lib/aiInsights";
+import { atRiskLeases, leaseExpirationLadder, forecastOccupancy } from "../src/lib/leaseRenewal";
+import { capitalForecast, reserveFundStatus, portfolioCapexForecast } from "../src/lib/capitalPlanning";
+import { sustainabilityProfile, portfolioSustainability } from "../src/lib/sustainability";
+import { rentRoll, t12Statement } from "../src/lib/financialStatements";
+import { rowsToCSV } from "../src/lib/csv";
 
 const ds = generateDataset();
 const lastMonth = ds.months[ds.months.length - 1];
@@ -33,6 +38,17 @@ for (const w of ds.workOrders) {
   if (w.vendorId && !vendorIds.has(w.vendorId)) orphans++, console.log("orphan wo->vendor", w.id);
 }
 console.log(orphans === 0 ? "OK: no orphaned foreign keys" : `FAIL: ${orphans} orphaned references`);
+
+console.log("\n=== Lease date integrity (endDate must follow startDate by a real term) ===");
+let badLeases = 0;
+let termDays: number[] = [];
+for (const l of ds.leases) {
+  const days = (new Date(l.endDate).getTime() - new Date(l.startDate).getTime()) / 86400000;
+  termDays.push(days);
+  if (days <= 0) badLeases++;
+}
+console.log("leases with endDate <= startDate:", badLeases, badLeases === 0 ? "OK" : "FAIL");
+console.log("lease term days: min", Math.min(...termDays).toFixed(0), "max", Math.max(...termDays).toFixed(0), "(expect ~335 for all, single fixed term)");
 
 console.log("\n=== Aggregate consistency: portfolio NOI == sum(property NOI) ===");
 const propNoiSum = ds.properties.reduce((s, p) => s + monthlyFinancials(ds, p.id, lastMonth).noi, 0);
@@ -104,3 +120,58 @@ console.log({
   occupancyPct: pf.occupancyPct.toFixed(1),
   collectionEfficiencyPct: pf.collectionEfficiencyPct.toFixed(1),
 });
+
+console.log("\n=== Insights by category (each should have signal, not just Compliance) ===");
+const byCat: Record<string, number> = {};
+for (const i of insights) byCat[i.category] = (byCat[i.category] ?? 0) + 1;
+console.log(byCat);
+const emptyCategories = ["Rent Optimization", "Maintenance Risk", "Occupancy Forecast", "Renewal Risk", "Vendor Performance", "Compliance", "Capital Planning", "Sustainability"].filter((c) => !byCat[c]);
+console.log(emptyCategories.length === 0 ? "OK: every insight category produced at least one insight" : `WATCH: categories with zero insights this run: ${emptyCategories.join(", ")}`);
+
+console.log("\n=== Lease renewal / expiration ladder ===");
+const ladder = leaseExpirationLadder(ds);
+const totalActiveLeases = ds.leases.filter((l) => l.status !== "Ended").length;
+console.log("12mo ladder total leases:", ladder.reduce((s, m) => s + m.leaseCount, 0), "of", totalActiveLeases, "active leases");
+const atRisk = atRiskLeases(ds);
+console.log("portfolio at-risk leases (prob<50, next 6mo):", atRisk.length);
+const forecastSample = forecastOccupancy(ds, ds.properties[0].id);
+console.log("sample occupancy forecast:", forecastSample.currentOccupancyPct.toFixed(1), "->", forecastSample.forecastOccupancyPct.toFixed(1));
+
+console.log("\n=== Capital planning ===");
+let capexBad = 0;
+for (const p of ds.properties) {
+  for (const s of capitalForecast(ds, p.id)) {
+    if (s.estimatedCost <= 0 || Number.isNaN(s.estimatedCost)) capexBad++;
+  }
+  const reserve = reserveFundStatus(ds, p.id);
+  if (Number.isNaN(reserve.adequacyPct)) capexBad++;
+}
+console.log("capex/reserve computation errors:", capexBad, capexBad === 0 ? "OK" : "FAIL");
+const portfolioCapex = portfolioCapexForecast(ds);
+console.log("5yr portfolio capex by year:", portfolioCapex.map((y) => `${y.year}: ${(y.totalCost / 1e5).toFixed(0)}L`));
+
+console.log("\n=== Sustainability ===");
+let sustBad = 0;
+for (const p of ds.properties) {
+  const profile = sustainabilityProfile(ds, p.id);
+  if (profile.score < 0 || profile.score > 100 || Number.isNaN(profile.score)) sustBad++;
+}
+console.log("sustainability score out-of-range:", sustBad, sustBad === 0 ? "OK" : "FAIL");
+console.log("portfolio sustainability:", portfolioSustainability(ds));
+
+console.log("\n=== Financial statements (Rent Roll + T12) ===");
+const sampleProperty = ds.properties[0];
+const roll = rentRoll(ds, sampleProperty.id);
+const sampleUnits = ds.units.filter((u) => u.propertyId === sampleProperty.id).length;
+console.log("rent roll row count matches unit count:", roll.length === sampleUnits ? "OK" : `FAIL (${roll.length} vs ${sampleUnits})`);
+const t12 = t12Statement(ds, [sampleProperty.id]);
+const t12NoiCheck = Math.abs(t12.noi - (t12.totalIncome - t12.totalExpenses)) < 1;
+console.log("T12 NOI = totalIncome - totalExpenses:", t12NoiCheck ? "OK" : "FAIL");
+const t12SumCheck = Math.abs(t12.income.reduce((s, l) => s + l.total, 0) - t12.totalIncome) < 1;
+console.log("T12 income lines sum to totalIncome:", t12SumCheck ? "OK" : "FAIL");
+try {
+  const csv = rowsToCSV(roll.map((r) => ({ Unit: r.unitNumber, Rent: r.monthlyRent })));
+  console.log("CSV export smoke test:", csv.split("\n").length === roll.length + 1 ? "OK" : "FAIL", `(${csv.split("\n").length} lines)`);
+} catch (e) {
+  console.log("CSV export FAIL:", e);
+}

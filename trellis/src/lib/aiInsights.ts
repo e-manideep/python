@@ -1,24 +1,11 @@
 import type { Insight, TrellisDataset, Vendor, VendorCategory } from "../types";
-import { occupancyPctAsOf } from "./financials";
 import { formatINRCompact } from "./format";
+import { atRiskLeases, forecastOccupancy, leaseExpirationLadder } from "./leaseRenewal";
+import { capitalPlanningInsights as capitalPlanningInsightsImpl } from "./capitalPlanning";
+import { sustainabilityInsights as sustainabilityInsightsImpl } from "./sustainability";
 
 function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
-}
-
-function linregSlope(points: number[]): number {
-  const n = points.length;
-  if (n < 2) return 0;
-  const xs = points.map((_, i) => i);
-  const xMean = xs.reduce((s, x) => s + x, 0) / n;
-  const yMean = points.reduce((s, y) => s + y, 0) / n;
-  let num = 0;
-  let den = 0;
-  for (let i = 0; i < n; i++) {
-    num += (xs[i] - xMean) * (points[i] - yMean);
-    den += (xs[i] - xMean) ** 2;
-  }
-  return den === 0 ? 0 : num / den;
 }
 
 let idCounter = 0;
@@ -75,7 +62,14 @@ export function maintenanceRiskInsights(dataset: TrellisDataset): Insight[] {
   for (const property of dataset.properties) {
     const propWO = dataset.workOrders.filter((w) => w.propertyId === property.id);
     const openPriority = propWO.filter((w) => w.status === "Overdue" || ((w.status === "Open" || w.status === "Assigned" || w.status === "In Progress") && (w.priority === "High" || w.priority === "Critical")));
-    const burdenRate = property.totalUnits > 0 ? (openPriority.length / property.totalUnits) * 100 : 0;
+
+    // SLA breach rate over the property's full completed-ticket history is a far more
+    // stable signal of chronic under-performance than a snapshot of what's open right now
+    // (which is noisy — most tickets resolve within days regardless of the property's
+    // underlying health).
+    const completed = propWO.filter((w) => w.status === "Completed" && w.resolvedDate);
+    const breached = completed.filter((w) => (new Date(w.resolvedDate!).getTime() - new Date(w.createdDate).getTime()) / 3.6e6 > w.slaHours * 1.05);
+    const slaBreachRatePct = completed.length ? (breached.length / completed.length) * 100 : 0;
 
     const categoryCounts = new Map<string, number>();
     for (const w of propWO) categoryCounts.set(w.category, (categoryCounts.get(w.category) ?? 0) + 1);
@@ -84,49 +78,88 @@ export function maintenanceRiskInsights(dataset: TrellisDataset): Insight[] {
 
     const buildingAge = new Date(currentMonth + "-01").getFullYear() - property.yearBuilt;
 
-    let riskScore = burdenRate * 1.4 + (topShare > 0.35 ? (topShare - 0.35) * 120 : 0) + Math.max(0, buildingAge - 10) * 1.2;
+    let riskScore = slaBreachRatePct * 1.1 + Math.max(0, topShare - 0.3) * 110 + Math.max(0, buildingAge - 8) * 1.3 + openPriority.length * 7;
     riskScore = clamp(riskScore, 0, 100);
 
-    if (riskScore > 28) {
+    if (riskScore > 26) {
       insights.push({
         id: nextId("maint"),
         category: "Maintenance Risk",
-        severity: riskScore > 55 ? "action" : "watch",
+        severity: riskScore > 40 ? "action" : "watch",
         propertyId: property.id,
         vendorId: null,
         title: `${property.name} flagged for elevated maintenance risk`,
-        detail: `${openPriority.length} unresolved high-priority/overdue ticket(s) against ${property.totalUnits} units${topEntry ? `, with ${topEntry[0]} accounting for ${(topShare * 100).toFixed(0)}% of all tickets — a likely recurring root cause` : ""}.`,
+        detail: `${slaBreachRatePct.toFixed(0)}% of completed tickets missed SLA over this property's service history${openPriority.length ? `, ${openPriority.length} high-priority/overdue ticket(s) open right now` : ""}${topEntry ? `, and ${topEntry[0]} accounts for ${(topShare * 100).toFixed(0)}% of all tickets — a likely recurring root cause` : ""}.`,
         metricLabel: "Risk score",
         metricValue: `${riskScore.toFixed(0)} / 100`,
-        method: `Weighted score from open high-priority/overdue ticket density, category concentration (recurring-issue signal), and building age.`,
+        method: `Weighted score from lifetime SLA-breach rate, category concentration (recurring-issue signal), building age, and currently open high-priority/overdue tickets.`,
       });
     }
   }
   return insights.sort((a, b) => Number(b.metricValue.split(" ")[0]) - Number(a.metricValue.split(" ")[0]));
 }
 
-// ---- 3. Occupancy Forecast ----
+// ---- 3. Occupancy Forecast (probability-weighted, not a naive trend line) ----
 export function occupancyForecastInsights(dataset: TrellisDataset): Insight[] {
   const insights: Insight[] = [];
-  const window = dataset.months.slice(-6);
   for (const property of dataset.properties) {
-    const series = window.map((m) => occupancyPctAsOf(dataset, property.id, m));
-    const slope = linregSlope(series);
-    const current = series[series.length - 1];
-    const forecast = clamp(current + slope * 3, 0, 100);
-
-    if (slope < -0.6) {
+    const forecast = forecastOccupancy(dataset, property.id);
+    const delta = forecast.forecastOccupancyPct - forecast.currentOccupancyPct;
+    if (delta < -2.5) {
       insights.push({
         id: nextId("occ"),
         category: "Occupancy Forecast",
-        severity: forecast < current - 5 ? "action" : "watch",
+        severity: delta < -6 ? "action" : "watch",
         propertyId: property.id,
         vendorId: null,
-        title: `${property.name} occupancy trending down`,
-        detail: `Occupancy has declined at ~${Math.abs(slope).toFixed(1)} pts/month over the last ${window.length} months. At this trend, projected occupancy in 3 months is ${forecast.toFixed(0)}%, versus ${current.toFixed(0)}% today.`,
+        title: `${property.name} projected to lose occupancy over the next quarter`,
+        detail: `${forecast.expectedNonRenewals.toFixed(1)} expected non-renewals over the next 3 months are only partially offset by ${forecast.expectedNewLeases.toFixed(1)} expected new lease-ups at the recent fill rate. Projected occupancy: ${forecast.forecastOccupancyPct.toFixed(0)}%, versus ${forecast.currentOccupancyPct.toFixed(0)}% today.`,
         metricLabel: "3-month forecast",
-        metricValue: `${forecast.toFixed(0)}% (from ${current.toFixed(0)}%)`,
-        method: `Linear trend fit over the trailing ${window.length}-month occupancy series, projected forward 3 months.`,
+        metricValue: `${forecast.forecastOccupancyPct.toFixed(0)}% (from ${forecast.currentOccupancyPct.toFixed(0)}%)`,
+        method: forecast.method,
+      });
+    }
+  }
+  return insights;
+}
+
+// ---- Renewal Risk (lease-level, revenue-weighted) ----
+export function renewalRiskInsights(dataset: TrellisDataset): Insight[] {
+  const insights: Insight[] = [];
+  for (const property of dataset.properties) {
+    const atRisk = atRiskLeases(dataset, property.id, 6, 50);
+    if (atRisk.length === 0) continue;
+    const revenueAtRisk = atRisk.reduce((s, a) => s + a.rentAmount, 0);
+    insights.push({
+      id: nextId("renew"),
+      category: "Renewal Risk",
+      severity: revenueAtRisk > 150000 || atRisk.length >= 5 ? "action" : "watch",
+      propertyId: property.id,
+      vendorId: null,
+      title: `${atRisk.length} lease${atRisk.length === 1 ? "" : "s"} at ${property.name} at risk of non-renewal within 6 months`,
+      detail: `Renewal probability model flags ${atRisk.length} expiring lease(s) below 50% likely-to-renew, driven mainly by ${atRisk[0].rentGapPct > 0 ? "above-market pricing" : "service/tenure factors"}. Combined rent at risk: ${formatINRCompact(revenueAtRisk)}/mo.`,
+      metricLabel: "Monthly revenue at risk",
+      metricValue: `${formatINRCompact(revenueAtRisk)}/mo`,
+      method: `Per-lease renewal probability from tenure, rent-vs-market gap, and service rating; flags leases expiring within 6 months scoring below 50%.`,
+    });
+  }
+
+  const ladder = leaseExpirationLadder(dataset);
+  const totalLeases = dataset.leases.filter((l) => l.status !== "Ended").length;
+  for (const month of ladder) {
+    const share = totalLeases ? (month.leaseCount / totalLeases) * 100 : 0;
+    if (share > 12 && month.leaseCount >= 15) {
+      insights.push({
+        id: nextId("ladder"),
+        category: "Renewal Risk",
+        severity: "watch",
+        propertyId: null,
+        vendorId: null,
+        title: `Lease expirations concentrated in ${month.label}`,
+        detail: `${month.leaseCount} leases (${share.toFixed(0)}% of the active book) expire in ${month.label}, representing ${formatINRCompact(month.revenueAtRisk)}/mo — a renewal-execution concentration risk worth staggering in future lease terms.`,
+        metricLabel: "Leases expiring",
+        metricValue: `${month.leaseCount} (${share.toFixed(0)}% of book)`,
+        method: `Portfolio-wide lease expiration ladder over the next 12 months; flags any single month exceeding 12% of the active lease book.`,
       });
     }
   }
@@ -227,7 +260,16 @@ export function complianceInsights(dataset: TrellisDataset): Insight[] {
 }
 
 export function generateAllInsights(dataset: TrellisDataset): Insight[] {
-  const all = [...complianceInsights(dataset), ...maintenanceRiskInsights(dataset), ...rentOptimizationInsights(dataset), ...occupancyForecastInsights(dataset), ...vendorPerformanceInsights(dataset)];
+  const all = [
+    ...complianceInsights(dataset),
+    ...maintenanceRiskInsights(dataset),
+    ...rentOptimizationInsights(dataset),
+    ...occupancyForecastInsights(dataset),
+    ...renewalRiskInsights(dataset),
+    ...vendorPerformanceInsights(dataset),
+    ...capitalPlanningInsightsImpl(dataset),
+    ...sustainabilityInsightsImpl(dataset),
+  ];
   const sevOrder: Record<Insight["severity"], number> = { action: 0, watch: 1, info: 2 };
   return all.sort((a, b) => sevOrder[a.severity] - sevOrder[b.severity]);
 }

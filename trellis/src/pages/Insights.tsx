@@ -5,14 +5,17 @@ import { Card, Pill, SectionHeading } from "../components/ui";
 import { InsightRow } from "../components/InsightRow";
 import type { Insight } from "../types";
 
-const CATEGORIES: Insight["category"][] = ["Rent Optimization", "Maintenance Risk", "Occupancy Forecast", "Vendor Performance", "Compliance"];
+const CATEGORIES: Insight["category"][] = ["Rent Optimization", "Maintenance Risk", "Occupancy Forecast", "Renewal Risk", "Vendor Performance", "Compliance", "Capital Planning", "Sustainability"];
 
 const METHOD_CARDS = [
   { title: "Rent Optimization", desc: "Compares every unit's current rent to a comp-based market benchmark for its locality and configuration. Flags units >8% under or over benchmark." },
-  { title: "Maintenance Risk", desc: "Weighted score from open high-priority/overdue ticket density, category concentration (a signal of a recurring root cause), and building age." },
-  { title: "Occupancy Forecast", desc: "Fits a linear trend to the trailing 6-month occupancy series per property and projects 3 months forward." },
+  { title: "Maintenance Risk", desc: "Weighted score from lifetime SLA-breach rate, category concentration (a recurring-issue signal), building age, and currently open high-priority tickets." },
+  { title: "Occupancy Forecast", desc: "Current occupancy minus renewal-probability-weighted expected move-outs over the next 3 months, plus expected new lease-ups at the trailing fill rate." },
+  { title: "Renewal Risk", desc: "Per-lease renewal probability from tenure, rent-vs-market gap, and service rating, plus a 12-month lease-expiration concentration check." },
   { title: "Vendor Performance", desc: "Ranks vendors within each category on 50% SLA compliance, 30% resident rating, 20% cost competitiveness vs. category average." },
   { title: "Compliance", desc: "Reads directly from each property's compliance register — RERA, fire safety, insurance, lease documentation, lift AMC." },
+  { title: "Capital Planning", desc: "Models major system replacement cycles (roof, lift, paint, plumbing, electrical, STP) by age and checks reserve-fund adequacy against the 5-year forecast." },
+  { title: "Sustainability", desc: "Engineering estimate of common-area energy/water intensity and green-amenity adoption — flags properties with a high estimated carbon footprint." },
 ];
 
 export function Insights() {
@@ -42,7 +45,7 @@ export function Insights() {
         <Card><div className="text-xs font-medium text-ink-500 uppercase mb-1">Informational</div><div className="font-display text-2xl text-score-good">{counts.info}</div></Card>
       </div>
 
-      <div className="grid sm:grid-cols-5 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
         {METHOD_CARDS.map((m) => (
           <div key={m.title} className="rounded-xl border border-ink-100 bg-white p-3.5">
             <div className="text-xs font-semibold text-ink-900 mb-1">{m.title}</div>
@@ -96,7 +99,7 @@ export function Insights() {
       </Card>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        {["Rent Optimization", "Maintenance Risk", "Occupancy Forecast", "Vendor Performance", "Compliance"].map((c) => <Pill key={c}>{c}</Pill>)}
+        {CATEGORIES.map((c) => <Pill key={c}>{c}</Pill>)}
       </div>
     </div>
   );

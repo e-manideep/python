@@ -31,10 +31,39 @@ score — instantly legible to any stakeholder) computed from five real, weighte
 | Compliance | 15% | RERA, fire safety, insurance, lease documentation, lift AMC |
 | Resident Satisfaction | 15% | Service ratings, resolution speed |
 
-Every **Trellis Intelligence** recommendation (rent pricing, maintenance risk, occupancy
-forecast, vendor ranking, compliance alerts) shows the exact numbers and method behind it —
-see `src/lib/aiInsights.ts`. This is deliberately a transparent, explainable
-rules/statistics engine rather than an opaque model, so every claim on screen is auditable.
+Every **Trellis Intelligence** recommendation — rent pricing, maintenance risk, occupancy
+forecast, lease renewal risk, vendor ranking, compliance, capital planning, sustainability —
+shows the exact numbers and method behind it (see `src/lib/aiInsights.ts`). This is
+deliberately a transparent, explainable rules/statistics engine rather than an opaque model,
+so every claim on screen is auditable.
+
+## Beyond the basics: the institutional-grade modules
+
+A benchmark against the real competitive landscape (enterprise PM/accounting software like
+Yardi/MRI, mid-market platforms like AppFolio/Entrata, and traditional facility management
+firms — see the capability matrix on the landing page) turned up four categories of
+capability that matter to a real institutional owner and weren't in the first pass. All four
+are implemented with real, derived logic — not additional hardcoded numbers:
+
+- **Lease Expiration Ladder & Renewal Risk** (`src/lib/leaseRenewal.ts`) — a per-lease
+  renewal-probability model (tenure, rent-vs-market gap, service rating) drives a 12-month
+  expiration ladder with concentration-risk detection, and replaces a naive linear-trend
+  occupancy forecast with one that's actually mechanistic: current occupancy, minus
+  probability-weighted expected non-renewals, plus expected lease-ups extrapolated from the
+  trailing fill rate.
+- **Capital Planning & Reserve Fund Forecasting** (`src/lib/capitalPlanning.ts`) — the same
+  discipline as a condo reserve study: models each major building system's replacement cycle
+  (roof, lift, paint, plumbing, electrical, STP) by age, estimates cost, and checks whether
+  an assumed reserve-fund policy actually covers the 5-year capital plan. Every assumption
+  (e.g. "cycle starts from handover — no prior renovation record") is stated explicitly.
+- **Sustainability / ESG Index** (`src/lib/sustainability.ts`) — kept deliberately *separate*
+  from the core Trellis Score, mirroring how institutional ESG frameworks (GRESB, etc.)
+  report alongside financial performance rather than blending into it. Energy/water
+  intensity and a carbon estimate are disclosed as engineering estimates, not metered
+  readings — the disclosure is the point.
+- **Investor-Grade Rent Roll & T12 Statement** (`src/lib/financialStatements.ts`) — the two
+  documents actual real estate diligence asks for, built from the same transaction ledger
+  that drives every chart, with CSV export at both the property and portfolio level.
 
 ## Product surfaces
 
@@ -42,9 +71,12 @@ One deterministic dataset, four stakeholder experiences, switchable live from th
 persona menu — the same person can walk through every side of the platform in one sitting:
 
 - **Owner / Investor Portfolio** (`/portfolio`) — AUM, blended NOI, occupancy and score
-  trends, city breakdown, top signals, full property table.
-- **Property Detail** (`/property/:id`) — score breakdown & history, financials, unit-level
-  rent-vs-market, maintenance history, vendors, compliance, community feed.
+  trends, city breakdown, lease expiration ladder, 5-year capital plan, sustainability index,
+  top signals, full property table, and a trailing-12-month portfolio operating statement.
+- **Property Detail** (`/property/:id`) — score breakdown & history, financials, a full Rent
+  Roll with CSV export, lease renewal risk, capital plan & reserve-fund adequacy,
+  sustainability, maintenance history, vendors, compliance, a T12 statement with CSV export,
+  and community feed.
 - **Resident Portal** (`/resident`) — pay rent, raise a maintenance ticket, community feed.
 - **Vendor Portal** (`/vendor`) — job queue, SLA, mark work in progress/completed, earnings.
 - **Field Ops Console** (`/ops`) — city-wide dispatch kanban with live vendor assignment.
@@ -98,22 +130,31 @@ npm run verify     # data-integrity sanity script (see below)
 
 ## Verifying the data is real, not "AI slop"
 
-`npm run verify` runs `scripts/sanity.ts`, which checks the generated dataset and scoring
-engine for internal consistency — this was run repeatedly during development to catch and
-fix issues (and did: an early version had occupancy artificially ramping from 25%→82% over
-the trend window because unit lease-start dates weren't decoupled from lease *renewals*;
-this is now fixed and checked). It verifies:
+`npm run verify` runs `scripts/sanity.ts`, which checks the generated dataset, scoring
+engine, and every derived module for internal consistency — this was run repeatedly during
+development to catch and fix real issues, not just as a formality. Two examples it actually
+caught: an early version had occupancy artificially ramping from 25%→82% over the trend
+window because unit lease-start dates weren't decoupled from lease *renewals*; and a lease
+end-date formula bug that could put a lease's end date before its start date (caught by the
+lease-date-integrity check below before it reached the Rent Roll). Both are fixed. It
+verifies:
 
 - **No orphaned foreign keys** — every unit→property, lease→unit/resident, payment→lease,
   work order→property/unit/vendor reference resolves.
+- **Lease date integrity** — every lease's end date follows its start date by a real term.
 - **Aggregate consistency** — portfolio-level NOI and asset value equal the sum of every
-  individual property's figures, computed independently.
+  individual property's figures, computed independently; T12 statement totals reconcile
+  line-by-line; Rent Roll row count matches unit count.
 - **Score discrimination** — the Trellis Score correlates strongly (typically r > 0.9) with
   the generator's independent underlying "how well is this asset run" signal, confirming
   the scoring formula is actually discriminating quality rather than producing noise, while
   staying within the documented 300–900 band.
+- **Every insight category fires** — a category that never produces a single insight in the
+  demo data is a dead feature, so the check flags any of the 8 categories that come back
+  empty (and this caught real threshold-calibration issues during development).
 - **Vendor stats** are aggregated from actual completed work orders, not fabricated
   separately from the tickets they claim to summarize.
+- **CSV export smoke test** — the export path actually produces well-formed CSV.
 
 ## Market & data notes
 

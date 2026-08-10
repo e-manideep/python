@@ -3,6 +3,7 @@ import { formatINRCompact } from "./format";
 import { atRiskLeases, forecastOccupancy, leaseExpirationLadder } from "./leaseRenewal";
 import { capitalPlanningInsights as capitalPlanningInsightsImpl } from "./capitalPlanning";
 import { sustainabilityInsights as sustainabilityInsightsImpl } from "./sustainability";
+import { makeReadyInsights as makeReadyInsightsImpl } from "./propertyServices";
 
 function clamp(v: number, lo: number, hi: number) {
   return Math.max(lo, Math.min(hi, v));
@@ -269,6 +270,7 @@ export function generateAllInsights(dataset: TrellisDataset): Insight[] {
     ...vendorPerformanceInsights(dataset),
     ...capitalPlanningInsightsImpl(dataset),
     ...sustainabilityInsightsImpl(dataset),
+    ...makeReadyInsightsImpl(dataset),
   ];
   const sevOrder: Record<Insight["severity"], number> = { action: 0, watch: 1, info: 2 };
   return all.sort((a, b) => sevOrder[a.severity] - sevOrder[b.severity]);

@@ -8,6 +8,7 @@ const ROLE_ROUTE: Record<Persona["role"], string> = {
   resident: "/resident",
   vendor: "/vendor",
   ops: "/ops",
+  builder: "/builder",
 };
 
 const ROLE_LABEL: Record<Persona["role"], string> = {
@@ -15,6 +16,7 @@ const ROLE_LABEL: Record<Persona["role"], string> = {
   resident: "Resident",
   vendor: "Vendor Partner",
   ops: "Ops Manager",
+  builder: "Developer Partner",
 };
 
 function initials(name: string) {

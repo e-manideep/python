@@ -5,7 +5,7 @@ import { Card, Pill, SectionHeading } from "../components/ui";
 import { InsightRow } from "../components/InsightRow";
 import type { Insight } from "../types";
 
-const CATEGORIES: Insight["category"][] = ["Rent Optimization", "Maintenance Risk", "Occupancy Forecast", "Renewal Risk", "Vendor Performance", "Compliance", "Capital Planning", "Sustainability"];
+const CATEGORIES: Insight["category"][] = ["Rent Optimization", "Maintenance Risk", "Occupancy Forecast", "Renewal Risk", "Vendor Performance", "Compliance", "Capital Planning", "Sustainability", "Property Services"];
 
 const METHOD_CARDS = [
   { title: "Rent Optimization", desc: "Compares every unit's current rent to a comp-based market benchmark for its locality and configuration. Flags units >8% under or over benchmark." },
@@ -16,6 +16,7 @@ const METHOD_CARDS = [
   { title: "Compliance", desc: "Reads directly from each property's compliance register — RERA, fire safety, insurance, lease documentation, lift AMC." },
   { title: "Capital Planning", desc: "Models major system replacement cycles (roof, lift, paint, plumbing, electrical, STP) by age and checks reserve-fund adequacy against the 5-year forecast." },
   { title: "Sustainability", desc: "Engineering estimate of common-area energy/water intensity and green-amenity adoption — flags properties with a high estimated carbon footprint." },
+  { title: "Property Services", desc: "Make-ready ROI for vacant units: furnished units earn a sourced ~20–30% rental premium over unfurnished; flags properties where the payback is fast." },
 ];
 
 export function Insights() {
@@ -45,7 +46,7 @@ export function Insights() {
         <Card><div className="text-xs font-medium text-ink-500 uppercase mb-1">Informational</div><div className="font-display text-2xl text-score-good">{counts.info}</div></Card>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-8">
         {METHOD_CARDS.map((m) => (
           <div key={m.title} className="rounded-xl border border-ink-100 bg-white p-3.5">
             <div className="text-xs font-semibold text-ink-900 mb-1">{m.title}</div>

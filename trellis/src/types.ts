@@ -235,7 +235,7 @@ export type InsightSeverity = "info" | "watch" | "action";
 
 export interface Insight {
   id: string;
-  category: "Rent Optimization" | "Maintenance Risk" | "Occupancy Forecast" | "Renewal Risk" | "Vendor Performance" | "Compliance" | "Capital Planning" | "Sustainability" | "Portfolio";
+  category: "Rent Optimization" | "Maintenance Risk" | "Occupancy Forecast" | "Renewal Risk" | "Vendor Performance" | "Compliance" | "Capital Planning" | "Sustainability" | "Property Services" | "Portfolio";
   severity: InsightSeverity;
   propertyId: string | null;
   vendorId: string | null;
@@ -265,7 +265,7 @@ export interface TrellisDataset {
 
 export interface Persona {
   id: string;
-  role: "investor" | "resident" | "vendor" | "ops";
+  role: "investor" | "resident" | "vendor" | "ops" | "builder";
   displayName: string;
   subtitle: string;
   linkedId: string; // ownerId | residentId | vendorId | cityId

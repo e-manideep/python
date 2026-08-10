@@ -1,4 +1,4 @@
-import { generateDataset } from "../src/data/seed";
+import { generateDataset, FLAGSHIP_DEVELOPER } from "../src/data/seed";
 import { computeTrellisScore } from "../src/lib/trellisScore";
 import { monthlyFinancials, portfolioMonthlyFinancials, assetValue, portfolioAssetValue, currentOccupancyPct } from "../src/lib/financials";
 import { generateAllInsights } from "../src/lib/aiInsights";
@@ -7,6 +7,8 @@ import { capitalForecast, reserveFundStatus, portfolioCapexForecast } from "../s
 import { sustainabilityProfile, portfolioSustainability } from "../src/lib/sustainability";
 import { rentRoll, t12Statement } from "../src/lib/financialStatements";
 import { rowsToCSV } from "../src/lib/csv";
+import { builderPortfolioSummary, builderProjects, builderAnalytics } from "../src/lib/builderSelectors";
+import { portfolioServicesOpportunity, makeReadyOpportunity } from "../src/lib/propertyServices";
 
 const ds = generateDataset();
 const lastMonth = ds.months[ds.months.length - 1];
@@ -175,3 +177,24 @@ try {
 } catch (e) {
   console.log("CSV export FAIL:", e);
 }
+
+console.log("\n=== Builder / Developer Portal ===");
+const builderSummary = builderPortfolioSummary(ds, FLAGSHIP_DEVELOPER);
+const builderProjectList = builderProjects(ds, FLAGSHIP_DEVELOPER);
+console.log(`${FLAGSHIP_DEVELOPER}: ${builderSummary.projectCount} projects, ${builderSummary.totalUnits} units, ${builderSummary.occupancyPct.toFixed(1)}% occupied, avg score ${builderSummary.avgTrellisScore}`);
+console.log("builder project count sane (3-15):", builderSummary.projectCount >= 3 && builderSummary.projectCount <= 15 ? "OK" : `WATCH (${builderSummary.projectCount})`);
+const projectUnitSum = builderProjectList.reduce((s, p) => s + p.totalUnits, 0);
+console.log("sum(project.totalUnits) == builder.totalUnits:", projectUnitSum === builderSummary.totalUnits ? "OK" : "FAIL");
+const analytics = builderAnalytics(ds, FLAGSHIP_DEVELOPER);
+console.log("builder analytics computed without nulls:", analytics.highestVacancy && analytics.highestRent ? "OK" : "FAIL");
+
+console.log("\n=== Property Services / Make-Ready ===");
+const servicesOpp = portfolioServicesOpportunity(ds);
+console.log(servicesOpp);
+let servicesBad = 0;
+for (const u of ds.units.filter((u) => u.status === "Vacant")) {
+  const opp = makeReadyOpportunity(u);
+  if (opp.estimatedCost <= 0 || opp.furnishedPotentialRent <= opp.currentMarketRent || !Number.isFinite(opp.paybackMonths)) servicesBad++;
+}
+console.log("make-ready opportunity computation errors:", servicesBad, servicesBad === 0 ? "OK" : "FAIL");
+console.log("avg payback plausible (6-60mo):", servicesOpp.avgPaybackMonths >= 6 && servicesOpp.avgPaybackMonths <= 60 ? "OK" : `WATCH (${servicesOpp.avgPaybackMonths.toFixed(0)})`);

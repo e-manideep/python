@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { generateDataset } from "../data/seed";
+import { generateDataset, FLAGSHIP_DEVELOPER } from "../data/seed";
 import type { Persona, RentPayment, TrellisDataset, WorkOrder, WorkOrderCategory, WorkOrderPriority } from "../types";
 import { loadJSON, saveJSON } from "./storage";
 import { isoDate } from "../lib/dates";
@@ -34,6 +34,13 @@ export const PERSONAS: Persona[] = [
     displayName: "Karthik Subramanian",
     subtitle: "City Operations Manager, Bengaluru",
     linkedId: "blr",
+  },
+  {
+    id: "persona-builder",
+    role: "builder",
+    displayName: "Vikram Chowdary",
+    subtitle: `VP Post-Handover Services, ${FLAGSHIP_DEVELOPER}`,
+    linkedId: FLAGSHIP_DEVELOPER,
   },
 ];
 

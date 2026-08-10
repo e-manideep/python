@@ -40,6 +40,8 @@ import type {
 
 export const SEED = 90210;
 export const HISTORY_MONTHS = 18;
+/** The flagship developer channel-partner whose portfolio the Builder Portal shows. */
+export const FLAGSHIP_DEVELOPER = "Meridian Habitats";
 
 const CONFIG_AREA: Record<UnitConfig, [number, number]> = {
   "1BHK": [540, 700],
@@ -214,7 +216,10 @@ export function generateDataset(seed: number = SEED, now: Date = new Date()): Tr
         cityId: plan.cityId,
         locality: locality.name,
         type,
-        developer: rng.pick(DEVELOPERS),
+        // One developer is deliberately concentrated as the flagship channel-partner
+        // portfolio — this is what makes the Builder Portal a real developer's view of
+        // their own handed-over communities, not a scattering of one-off buildings.
+        developer: rng.bool(0.38) ? FLAGSHIP_DEVELOPER : rng.pick(DEVELOPERS.filter((d) => d !== FLAGSHIP_DEVELOPER)),
         yearBuilt: rng.int(2007, 2023),
         hasLift,
         totalUnits,

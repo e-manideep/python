@@ -7,6 +7,8 @@ import { Resident } from "./pages/Resident";
 import { Vendor } from "./pages/Vendor";
 import { Ops } from "./pages/Ops";
 import { Insights } from "./pages/Insights";
+import { Builder } from "./pages/Builder";
+import { Services } from "./pages/Services";
 
 function App() {
   return (
@@ -20,6 +22,8 @@ function App() {
           <Route path="/resident" element={<Resident />} />
           <Route path="/vendor" element={<Vendor />} />
           <Route path="/ops" element={<Ops />} />
+          <Route path="/builder" element={<Builder />} />
+          <Route path="/services" element={<Services />} />
           <Route path="/insights" element={<Insights />} />
         </Routes>
       </main>

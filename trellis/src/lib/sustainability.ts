@@ -120,7 +120,7 @@ export function sustainabilityInsights(dataset: TrellisDataset): Insight[] {
   let seq = 0;
   for (const property of dataset.properties) {
     const profile = sustainabilityProfile(dataset, property.id);
-    if (profile.score < 45) {
+    if (profile.score < 52) {
       const solarRetrofitSavingsKwh = profile.commonAreaAnnualKwh * 0.15;
       insights.push({
         id: `sust-${seq++}`,

@@ -2,7 +2,7 @@
 // shape (or the derived score/insight types below) — there is exactly one
 // path data travels, so numbers stay consistent across pages.
 
-export type CityId = "blr" | "pun";
+export type CityId = "hyd" | "sec";
 
 export interface City {
   id: CityId;

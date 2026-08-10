@@ -25,7 +25,7 @@ export function Vendor() {
       <div className="mb-8">
         <div className="text-xs font-semibold uppercase tracking-wide text-bronze-700">Vendor Portal</div>
         <h1 className="font-display text-3xl text-ink-950 mt-1">{vendor.name}</h1>
-        <p className="text-ink-500 text-sm mt-1">{vendor.categories.join(", ")} · {vendor.cityId === "blr" ? "Bengaluru" : "Pune"} · GST {vendor.gstNumber}</p>
+        <p className="text-ink-500 text-sm mt-1">{vendor.categories.join(", ")} · {dataset.cities.find((c) => c.id === vendor.cityId)?.name} · GST {vendor.gstNumber}</p>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">

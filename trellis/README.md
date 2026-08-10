@@ -7,7 +7,7 @@ record for leasing, maintenance, make-ready/interiors, compliance and community,
 by one transparent performance number, the **Trellis Score**.
 
 This repo is a real, runnable product, not a mockup: a seeded (but fully computed, not
-hardcoded) dataset of 24 properties / ~2,000 units across Bengaluru and Pune drives every
+hardcoded) dataset of 24 properties / ~2,000 units across Hyderabad and Secunderabad drives every
 number on every screen — financials, occupancy, scores, and AI recommendations are all
 derived live from the same underlying operating data, so nothing shown is fabricated
 independently of anything else.
@@ -203,7 +203,10 @@ verifies:
 
 ## Market & data notes
 
-Sample data models a residential portfolio across Bengaluru and Pune (India) — chosen
-because the source thesis explicitly names NRIs, builders and Indian regulatory constructs
-(RERA) as core stakeholders. All property names, developers, vendors, owners and residents
-are synthetic. Currency is INR, formatted in Lakh/Crore per market convention.
+Sample data models a residential portfolio across Hyderabad and Secunderabad (Telangana,
+India) — chosen because the source thesis explicitly names NRIs, builders and Indian
+regulatory constructs (RERA) as core stakeholders, and Hyderabad is one of India's fastest-
+growing post-handover residential markets (heavy IT-corridor supply in Gachibowli/Kokapet/
+Financial District plus strong NRI/institutional investor demand). All property names,
+developers, vendors, owners and residents are synthetic. Currency is INR, formatted in
+Lakh/Crore per market convention.

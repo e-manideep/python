@@ -97,7 +97,7 @@ export function Landing() {
           <div className="grid lg:grid-cols-[1.15fr_0.85fr] gap-14 items-center">
             <div>
               <div className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-medium text-bronze-300 mb-6">
-                Post-Handover Residential Asset Operations · Bengaluru &amp; Pune
+                Post-Handover Residential Asset Operations · Hyderabad &amp; Secunderabad
               </div>
               <h1 className="font-display text-4xl sm:text-5xl leading-[1.08] tracking-tight">
                 You bought the apartment. Who's actually running it?

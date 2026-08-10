@@ -128,7 +128,7 @@ export function occupancyForecastInsights(dataset: TrellisDataset): Insight[] {
 export function renewalRiskInsights(dataset: TrellisDataset): Insight[] {
   const insights: Insight[] = [];
   for (const property of dataset.properties) {
-    const atRisk = atRiskLeases(dataset, property.id, 6, 50);
+    const atRisk = atRiskLeases(dataset, property.id, 6, 60);
     if (atRisk.length === 0) continue;
     const revenueAtRisk = atRisk.reduce((s, a) => s + a.rentAmount, 0);
     insights.push({

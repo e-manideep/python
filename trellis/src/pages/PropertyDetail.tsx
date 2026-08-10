@@ -70,7 +70,7 @@ export function PropertyDetail() {
   const rentRollRows = rentRoll(dataset, property.id);
   const t12 = t12Statement(dataset, [property.id]);
   const ladder = leaseExpirationLadder(dataset, [property.id]);
-  const propertyAtRisk = atRiskLeases(dataset, property.id, 6, 50);
+  const propertyAtRisk = atRiskLeases(dataset, property.id, 6, 60);
   const capex = capitalForecast(dataset, property.id);
   const reserve = reserveFundStatus(dataset, property.id);
   const sustainability = sustainabilityProfile(dataset, property.id);

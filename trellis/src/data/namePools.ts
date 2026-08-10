@@ -8,28 +8,30 @@ export interface Locality {
   tier: Tier;
 }
 
+// Hyderabad + Secunderabad — the historic twin city, both part of the Hyderabad
+// metropolitan area (Telangana). Kept as two "cities" so the portfolio's city-breakdown
+// views still compare two real, distinct submarkets rather than one flat pool.
 export const CITIES = [
-  { id: "blr" as CityId, name: "Bengaluru", state: "Karnataka" },
-  { id: "pun" as CityId, name: "Pune", state: "Maharashtra" },
+  { id: "hyd" as CityId, name: "Hyderabad", state: "Telangana" },
+  { id: "sec" as CityId, name: "Secunderabad", state: "Telangana" },
 ];
 
 export const LOCALITIES: Locality[] = [
-  { name: "Indiranagar", cityId: "blr", tier: "premium" },
-  { name: "HSR Layout", cityId: "blr", tier: "premium" },
-  { name: "Koramangala", cityId: "blr", tier: "premium" },
-  { name: "Whitefield", cityId: "blr", tier: "mid" },
-  { name: "Sarjapur Road", cityId: "blr", tier: "mid" },
-  { name: "Hebbal", cityId: "blr", tier: "mid" },
-  { name: "Electronic City", cityId: "blr", tier: "emerging" },
-  { name: "Bannerghatta Road", cityId: "blr", tier: "emerging" },
-  { name: "Yelahanka", cityId: "blr", tier: "emerging" },
-  { name: "Koregaon Park", cityId: "pun", tier: "premium" },
-  { name: "Baner", cityId: "pun", tier: "premium" },
-  { name: "Kharadi", cityId: "pun", tier: "mid" },
-  { name: "Viman Nagar", cityId: "pun", tier: "mid" },
-  { name: "Wakad", cityId: "pun", tier: "mid" },
-  { name: "Hinjewadi", cityId: "pun", tier: "emerging" },
-  { name: "Kothrud", cityId: "pun", tier: "emerging" },
+  { name: "Jubilee Hills", cityId: "hyd", tier: "premium" },
+  { name: "Banjara Hills", cityId: "hyd", tier: "premium" },
+  { name: "Kokapet", cityId: "hyd", tier: "premium" },
+  { name: "Gachibowli", cityId: "hyd", tier: "mid" },
+  { name: "Financial District", cityId: "hyd", tier: "mid" },
+  { name: "Kondapur", cityId: "hyd", tier: "mid" },
+  { name: "Tellapur", cityId: "hyd", tier: "emerging" },
+  { name: "Madhapur", cityId: "hyd", tier: "emerging" },
+  { name: "Nallagandla", cityId: "hyd", tier: "emerging" },
+  { name: "Trimulgherry", cityId: "sec", tier: "premium" },
+  { name: "Begumpet", cityId: "sec", tier: "mid" },
+  { name: "Marredpally", cityId: "sec", tier: "mid" },
+  { name: "Alwal", cityId: "sec", tier: "emerging" },
+  { name: "Sainikpuri", cityId: "sec", tier: "emerging" },
+  { name: "ECIL", cityId: "sec", tier: "emerging" },
 ];
 
 // Base rent (INR per sqft per month) and capital value (INR per sqft) by tier.
@@ -141,8 +143,8 @@ export const RESIDENT_FIRST_NAMES = [
   "Praveen", "Swathi", "Manish", "Deepika", "Ashwin", "Lakshmi",
 ];
 export const RESIDENT_LAST_NAMES = [
-  "Sharma", "Rao", "Nair", "Iyer", "Reddy", "Gupta", "Menon", "Kulkarni",
-  "Patel", "Deshpande", "Krishnan", "Bhat", "Pillai", "Verma", "Joshi", "Shetty",
+  "Reddy", "Rao", "Sharma", "Nair", "Iyer", "Gupta", "Menon", "Goud",
+  "Chowdary", "Naidu", "Prasad", "Krishnan", "Verma", "Reddy", "Rao", "Shetty",
 ];
 
 export const VENDOR_NAME_BY_CATEGORY: Record<VendorCategory, string[]> = {

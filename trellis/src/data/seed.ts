@@ -85,14 +85,10 @@ function round0(n: number) {
   return Math.round(n);
 }
 
-function reraNumber(rng: Rng, cityId: CityId, seq: number): string {
-  if (cityId === "blr") {
-    const dd = String(rng.int(1, 28)).padStart(2, "0");
-    const mm = String(rng.int(1, 12)).padStart(2, "0");
-    const yy = rng.int(15, 22);
-    return `PRM/KA/RERA/1251/${300 + seq}/PR/${dd}${mm}${yy}/${rng.int(100000, 999999)}`;
-  }
-  return `P5210${String(20000 + seq * 37).padStart(7, "0")}`;
+// Telangana RERA (TS-RERA) project registration number format: P02 + 2-digit district
+// code + 7-digit sequence, e.g. P02400001234.
+function reraNumber(seq: number): string {
+  return `P0240${String(1000 + seq * 41).padStart(7, "0")}`;
 }
 
 function makeComplianceItems(rng: Rng, propertyId: string, hasLift: boolean, healthFactor: number): ComplianceItem[] {
@@ -135,11 +131,11 @@ export function generateDataset(seed: number = SEED, now: Date = new Date()): Tr
   // ---- Owners ----
   const owners: Owner[] = [];
   INDIVIDUAL_OWNER_NAMES.forEach((name, i) =>
-    owners.push({ id: `own-ind-${i}`, name, type: "Individual", baseLocation: rng.pick(["Bengaluru", "Chennai", "Mumbai", "Delhi NCR"]) })
+    owners.push({ id: `own-ind-${i}`, name, type: "Individual", baseLocation: rng.pick(["Hyderabad", "Hyderabad", "Bengaluru", "Chennai", "Mumbai", "Delhi NCR"]) })
   );
   NRI_OWNER_NAMES.forEach((name, i) => owners.push({ id: `own-nri-${i}`, name, type: "NRI", baseLocation: name.match(/\(([^)]+)\)/)?.[1] ?? "Overseas" }));
   FUND_OWNER_NAMES.forEach((name, i) => owners.push({ id: `own-fund-${i}`, name, type: "Institutional Fund", baseLocation: "Mumbai" }));
-  owners.push({ id: "own-builder-0", name: "Developer-Retained Stock", type: "Builder-Retained", baseLocation: "Bengaluru" });
+  owners.push({ id: "own-builder-0", name: "Developer-Retained Stock", type: "Builder-Retained", baseLocation: "Hyderabad" });
 
   // ---- Vendors (shells; stats aggregated after work orders) ----
   const vendors: Vendor[] = [];
@@ -155,7 +151,7 @@ export function generateDataset(seed: number = SEED, now: Date = new Date()): Tr
           categories: [category],
           cityId: city.id,
           contactPerson: `${rng.pick(RESIDENT_FIRST_NAMES)} ${rng.pick(RESIDENT_LAST_NAMES)}`,
-          gstNumber: `${city.id === "blr" ? "29" : "27"}AAFC${rng.int(1000, 9999)}${rng.pick(["A", "B", "C"])}1Z${rng.int(1, 9)}`,
+          gstNumber: `36AAFC${rng.int(1000, 9999)}${rng.pick(["A", "B", "C"])}1Z${rng.int(1, 9)}`,
           jobsCompleted: 0,
           avgRating: 0,
           slaCompliancePct: 0,
@@ -173,13 +169,13 @@ export function generateDataset(seed: number = SEED, now: Date = new Date()): Tr
   const usedNames = new Set<string>();
 
   const cityLocalities: Record<CityId, Locality[]> = {
-    blr: LOCALITIES.filter((l) => l.cityId === "blr"),
-    pun: LOCALITIES.filter((l) => l.cityId === "pun"),
+    hyd: LOCALITIES.filter((l) => l.cityId === "hyd"),
+    sec: LOCALITIES.filter((l) => l.cityId === "sec"),
   };
 
   const PROPERTY_PLAN: { cityId: CityId; count: number }[] = [
-    { cityId: "blr", count: 14 },
-    { cityId: "pun", count: 10 },
+    { cityId: "hyd", count: 17 },
+    { cityId: "sec", count: 7 },
   ];
 
   let pSeq = 0;
@@ -219,12 +215,12 @@ export function generateDataset(seed: number = SEED, now: Date = new Date()): Tr
         // One developer is deliberately concentrated as the flagship channel-partner
         // portfolio — this is what makes the Builder Portal a real developer's view of
         // their own handed-over communities, not a scattering of one-off buildings.
-        developer: rng.bool(0.38) ? FLAGSHIP_DEVELOPER : rng.pick(DEVELOPERS.filter((d) => d !== FLAGSHIP_DEVELOPER)),
+        developer: rng.bool(0.3) ? FLAGSHIP_DEVELOPER : rng.pick(DEVELOPERS.filter((d) => d !== FLAGSHIP_DEVELOPER)),
         yearBuilt: rng.int(2007, 2023),
         hasLift,
         totalUnits,
         ownerId: owner.id,
-        reraNumber: reraNumber(rng, plan.cityId, pSeq),
+        reraNumber: reraNumber(pSeq),
         compliance: makeComplianceItems(rng, propertyId, hasLift, healthFactor),
         amenities: rng.shuffle(AMENITY_POOL).slice(0, rng.int(5, 9)),
       };

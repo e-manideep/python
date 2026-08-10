@@ -32,8 +32,8 @@ export const PERSONAS: Persona[] = [
     id: "persona-ops",
     role: "ops",
     displayName: "Karthik Subramanian",
-    subtitle: "City Operations Manager, Bengaluru",
-    linkedId: "blr",
+    subtitle: "City Operations Manager, Hyderabad",
+    linkedId: "hyd",
   },
   {
     id: "persona-builder",
@@ -72,7 +72,7 @@ export const PERSONAS: Persona[] = [
   const vendor = [...dataset.vendors].sort((a, b) => b.jobsCompleted - a.jobsCompleted)[0];
   const p = PERSONAS.find((p) => p.id === "persona-vendor")!;
   p.displayName = vendor.name;
-  p.subtitle = `${vendor.categories.join(", ")} · ${vendor.cityId === "blr" ? "Bengaluru" : "Pune"}`;
+  p.subtitle = `${vendor.categories.join(", ")} · ${dataset.cities.find((c) => c.id === vendor.cityId)?.name}`;
   p.linkedId = vendor.id;
 })();
 

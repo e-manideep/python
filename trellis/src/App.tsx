@@ -9,6 +9,7 @@ import { Ops } from "./pages/Ops";
 import { Insights } from "./pages/Insights";
 import { Builder } from "./pages/Builder";
 import { Services } from "./pages/Services";
+import { Listings } from "./pages/Listings";
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="/ops" element={<Ops />} />
           <Route path="/builder" element={<Builder />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/listings" element={<Listings />} />
           <Route path="/insights" element={<Insights />} />
         </Routes>
       </main>

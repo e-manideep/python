@@ -44,6 +44,12 @@ export function Nav() {
               {l.label}
             </NavLink>
           ))}
+          <NavLink
+            to="/listings"
+            className={({ isActive }) => clsx("px-3 py-2 rounded-lg text-sm font-medium transition-colors", isActive ? "bg-ink-950 text-white" : "text-ink-600 hover:bg-ink-100")}
+          >
+            Browse Listings
+          </NavLink>
         </nav>
         <div className="ml-auto">
           <PersonaSwitcher />

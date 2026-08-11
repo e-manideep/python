@@ -110,6 +110,7 @@ export function Landing() {
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link to="/portfolio"><Button variant="primary" className="!bg-white !text-ink-950 hover:!bg-bronze-100 !px-5 !py-3 !text-[15px]">Open the Portfolio Dashboard</Button></Link>
                 <Link to="/insights"><Button variant="secondary" className="!bg-transparent !text-white !border-white/25 hover:!bg-white/10 !px-5 !py-3 !text-[15px]">See Trellis Intelligence</Button></Link>
+                <Link to="/listings"><Button variant="secondary" className="!bg-transparent !text-white !border-white/25 hover:!bg-white/10 !px-5 !py-3 !text-[15px]">Browse Available Homes</Button></Link>
               </div>
               <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
                 <div>

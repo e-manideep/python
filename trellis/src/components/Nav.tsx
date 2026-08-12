@@ -9,7 +9,10 @@ const LINKS_BY_ROLE: Record<string, { to: string; label: string }[]> = {
     { to: "/insights", label: "Trellis Intelligence" },
     { to: "/services", label: "Property Services" },
   ],
-  resident: [{ to: "/resident", label: "My Home" }],
+  resident: [
+    { to: "/resident", label: "My Home" },
+    { to: "/marketplace", label: "Marketplace" },
+  ],
   vendor: [{ to: "/vendor", label: "My Jobs" }],
   ops: [
     { to: "/ops", label: "Dispatch" },

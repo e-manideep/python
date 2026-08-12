@@ -158,6 +158,7 @@ export const VENDOR_NAME_BY_CATEGORY: Record<VendorCategory, string[]> = {
   Housekeeping: ["SparkleClean FM Services", "PristinePlus Housekeeping"],
   "Security Systems": ["SecureNet Systems", "GuardianEye Security Solutions"],
   Landscaping: ["GreenScape Gardens", "EverGreen Landscaping Co."],
+  "Interior Design": ["Nestcraft Interiors", "Studio Verve Design", "Casarra Interiors", "Bloomline Design Studio"],
 };
 
 export const WORK_ORDER_TEMPLATES: Record<WorkOrderCategory, string[]> = {

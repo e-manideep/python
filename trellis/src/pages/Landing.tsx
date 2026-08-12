@@ -110,8 +110,10 @@ export function Landing() {
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link to="/portfolio"><Button variant="primary" className="!bg-white !text-ink-950 hover:!bg-bronze-100 !px-5 !py-3 !text-[15px]">Open the Portfolio Dashboard</Button></Link>
                 <Link to="/insights"><Button variant="secondary" className="!bg-transparent !text-white !border-white/25 hover:!bg-white/10 !px-5 !py-3 !text-[15px]">See Trellis Intelligence</Button></Link>
-                <Link to="/listings"><Button variant="secondary" className="!bg-transparent !text-white !border-white/25 hover:!bg-white/10 !px-5 !py-3 !text-[15px]">Browse Available Homes</Button></Link>
               </div>
+              <p className="mt-4 text-sm text-ink-400">
+                Looking for a home instead? <Link to="/listings" className="text-bronze-300 underline underline-offset-2 hover:text-bronze-200">Browse available homes →</Link>
+              </p>
               <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
                 <div>
                   <div className="font-display text-2xl">{formatINRCompact(snap.aum)}</div>
@@ -132,6 +134,9 @@ export function Landing() {
               <ScoreDial composite={snap.avgScore} band={snap.avgScoreBand} label="Blended across all assets" />
               <div className="mt-4 pt-4 border-t border-ink-100">
                 <DistributionBar counts={bands} height={110} compact />
+              </div>
+              <div className="mt-3 pt-3 border-t border-ink-100 text-center text-[11px] text-ink-400">
+                {snap.propertyCount} properties, {snap.unitCount.toLocaleString("en-IN")} units — every score computed live from operating data, nothing pre-set.
               </div>
             </div>
           </div>
@@ -415,6 +420,8 @@ export function Landing() {
             <Link to="/ops"><Button variant="secondary">Field Ops Console</Button></Link>
             <Link to="/builder"><Button variant="secondary">Builder Portal</Button></Link>
             <Link to="/services"><Button variant="secondary">Property Services</Button></Link>
+            <Link to="/marketplace"><Button variant="secondary">Vendor Marketplace</Button></Link>
+            <Link to="/listings"><Button variant="secondary">Browse Listings</Button></Link>
           </div>
         </div>
       </section>

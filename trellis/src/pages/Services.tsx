@@ -1,7 +1,8 @@
+import { Link } from "react-router-dom";
 import { dataset } from "../lib/store";
 import { SERVICE_TIERS, FURNISHED_UPLIFT_PCT, makeReadyOpportunity, portfolioServicesOpportunity } from "../lib/propertyServices";
 import { formatINR, formatINRCompact, formatPct } from "../lib/format";
-import { Card, Pill, SectionHeading } from "../components/ui";
+import { Button, Card, Pill, SectionHeading } from "../components/ui";
 
 const LIFECYCLE = ["Handover", "Inspection", "Make-Ready", "Interiors / Renovation", "Leasing", "Operations", "Renewal or Move-out", "Make-Ready again"];
 
@@ -33,6 +34,9 @@ export function Services() {
           Trellis runs a managed contractor network across every trade — we own the customer relationship, pricing, SLA and
           quality; certified partners execute the physical work. One relationship, full accountability.
         </p>
+        <Link to="/marketplace" className="inline-block mt-4">
+          <Button variant="secondary">See the live vendor marketplace →</Button>
+        </Link>
       </div>
 
       <Card className="mb-8">

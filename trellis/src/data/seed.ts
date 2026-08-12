@@ -427,6 +427,19 @@ export function generateDataset(seed: number = SEED, now: Date = new Date()): Tr
     vendor.avgCostPerJob = jobs.length ? round0(jobs.reduce((s, j) => s + (j.cost ?? 0), 0) / jobs.length) : 0;
   }
 
+  // ---- Interior Design vendor stats: these are project engagements (multi-week fit-outs),
+  // not SLA maintenance tickets, so there's no matching WorkOrderCategory to aggregate from.
+  // Modeled with the same seeded RNG, and the cost figure is grounded in the same make-ready
+  // cost range used by the Property Services module (₹180k–500k base by config, Mid-Range/
+  // Premium tier multipliers up to 1.8x) rather than an unrelated invented number.
+  for (const vendor of vendors) {
+    if (!vendor.categories.includes("Interior Design")) continue;
+    vendor.jobsCompleted = rng.int(9, 34);
+    vendor.avgRating = Number(clamp(rng.gaussian(4.35, 0.35), 3.4, 5).toFixed(2));
+    vendor.slaCompliancePct = Number(clamp(rng.gaussian(89, 6), 72, 99).toFixed(1));
+    vendor.avgCostPerJob = round0(rng.float(210000, 380000));
+  }
+
   // ---- Transactions (derived from real rent payments + work order costs, plus formulaic opex) ----
   const transactions: Transaction[] = [];
   let tSeq = 0;

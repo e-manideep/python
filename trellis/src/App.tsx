@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import { Nav } from "./components/Nav";
+import { Footer } from "./components/Footer";
 import { Landing } from "./pages/Landing";
 import { Portfolio } from "./pages/Portfolio";
 import { PropertyDetail } from "./pages/PropertyDetail";
@@ -10,6 +11,7 @@ import { Insights } from "./pages/Insights";
 import { Builder } from "./pages/Builder";
 import { Services } from "./pages/Services";
 import { Listings } from "./pages/Listings";
+import { Marketplace } from "./pages/Marketplace";
 
 function App() {
   return (
@@ -26,12 +28,11 @@ function App() {
           <Route path="/builder" element={<Builder />} />
           <Route path="/services" element={<Services />} />
           <Route path="/listings" element={<Listings />} />
+          <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/insights" element={<Insights />} />
         </Routes>
       </main>
-      <footer className="border-t border-ink-100 py-6 text-center text-xs text-ink-400">
-        Trellis — a working product demonstration built on synthetic sample data for illustrative purposes.
-      </footer>
+      <Footer />
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { dataset, PERSONAS, useTrellisStore } from "../lib/store";
 import { formatDate, formatINR } from "../lib/format";
 import { monthLabel } from "../lib/dates";
@@ -72,7 +73,11 @@ export function Resident() {
         </Card>
 
         <Card>
-          <SectionHeading title="Raise a maintenance request" />
+          <SectionHeading
+            title="Raise a maintenance request"
+            description="Not sure who to pick? Routes to Ops, who'll assign the right vendor."
+            action={<Link to="/marketplace" className="text-xs font-semibold text-bronze-700 hover:underline whitespace-nowrap">Browse &amp; book a vendor →</Link>}
+          />
           {justRaised ? (
             <div className="rounded-xl bg-score-good-bg text-score-good p-4 text-sm font-medium">
               Request submitted — routed to the operations team for {property.name}. You'll see it below once assigned.

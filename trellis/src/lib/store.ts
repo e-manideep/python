@@ -103,6 +103,7 @@ interface TrellisStore extends MutationState {
   setPersona: (id: string) => void;
   advanceWorkOrder: (id: string, status: WorkOrder["status"], vendorId?: string | null) => void;
   raiseTicket: (input: { propertyId: string; unitId: string | null; category: WorkOrderCategory; description: string; priority: WorkOrderPriority }) => void;
+  bookVendor: (input: { propertyId: string; unitId: string | null; vendorId: string; category: WorkOrderCategory; description: string }) => void;
   payRent: (paymentId: string) => void;
   resetDemoState: () => void;
 }
@@ -156,6 +157,31 @@ export const useTrellisStore = create<TrellisStore>((set, get) => ({
       createdDate: isoDate(0),
       slaHours,
       vendorId: null,
+      resolvedDate: null,
+      cost: null,
+      residentRating: null,
+    };
+    const newWorkOrders = [...get().newWorkOrders, wo];
+    const next = { ...get(), newWorkOrders };
+    set({ newWorkOrders, ...computeDerived(next) });
+    persist(get());
+  },
+
+  bookVendor: (input) => {
+    const id = `wo-new-${get().newWorkOrders.length}-${Date.now()}`;
+    const priority: WorkOrderPriority = "Medium";
+    const wo: WorkOrder = {
+      id,
+      propertyId: input.propertyId,
+      unitId: input.unitId,
+      category: input.category,
+      description: input.description,
+      priority,
+      status: "Assigned",
+      raisedBy: "Marketplace Booking",
+      createdDate: isoDate(0),
+      slaHours: { Low: 168, Medium: 72, High: 24, Critical: 4 }[priority],
+      vendorId: input.vendorId,
       resolvedDate: null,
       cost: null,
       residentRating: null,

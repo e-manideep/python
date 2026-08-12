@@ -142,7 +142,7 @@ export interface WorkOrder {
   description: string;
   priority: WorkOrderPriority;
   status: WorkOrderStatus;
-  raisedBy: "Resident" | "Ops Inspection" | "Owner Request";
+  raisedBy: "Resident" | "Ops Inspection" | "Owner Request" | "Marketplace Booking";
   createdDate: string;
   slaHours: number;
   vendorId: string | null;
@@ -161,7 +161,8 @@ export type VendorCategory =
   | "Civil/Structural"
   | "Housekeeping"
   | "Security Systems"
-  | "Landscaping";
+  | "Landscaping"
+  | "Interior Design";
 
 export interface Vendor {
   id: string;

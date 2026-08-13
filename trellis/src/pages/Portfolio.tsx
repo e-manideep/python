@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { dataset, PERSONAS, useTrellisStore } from "../lib/store";
+import { dataset, PERSONAS } from "../lib/store";
 import { cityBreakdown, portfolioSnapshot, portfolioTrend, scoredProperties } from "../lib/portfolioSelectors";
 import { formatINRCompact, formatNumber, formatPct } from "../lib/format";
 import { Card, Pill, SectionHeading, StatTile } from "../components/ui";
@@ -19,8 +19,7 @@ import { T12StatementView } from "../components/T12StatementView";
 type SortKey = "score" | "name" | "occupancy" | "noiMargin";
 
 export function Portfolio() {
-  const selectedPersonaId = useTrellisStore((s) => s.selectedPersonaId);
-  const persona = PERSONAS.find((p) => p.id === selectedPersonaId) ?? PERSONAS[0];
+  const persona = PERSONAS.find((p) => p.role === "investor")!;
   const [sortKey, setSortKey] = useState<SortKey>("score");
   const [cityFilter, setCityFilter] = useState<string | "all">("all");
 

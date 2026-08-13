@@ -1,7 +1,18 @@
 import { Link } from "react-router-dom";
 import { TrellisMark } from "./Nav";
+import { useTrellisStore } from "../lib/store";
+import { logoutAll } from "../lib/auth";
 
 export function Footer() {
+  const resetDemoState = useTrellisStore((s) => s.resetDemoState);
+
+  function handleReset() {
+    if (!window.confirm("Reset all demo activity (bookings, tickets, rent payments) and sign out of every account? Useful before starting a fresh walkthrough.")) return;
+    resetDemoState();
+    logoutAll();
+    window.location.href = "/";
+  }
+
   return (
     <footer className="border-t border-ink-100 bg-ink-950 text-ink-300">
       <div className="max-w-7xl mx-auto px-5 sm:px-8 py-14">
@@ -50,7 +61,10 @@ export function Footer() {
 
         <div className="mt-12 pt-6 border-t border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs text-ink-500">
           <span>© 2026 Trellis. Product demonstration built for illustrative purposes.</span>
-          <span>Hyderabad &amp; Secunderabad, Telangana, India</span>
+          <div className="flex items-center gap-4">
+            <button onClick={handleReset} className="hover:text-white transition-colors underline underline-offset-2">Reset demo data &amp; sign out</button>
+            <span>Hyderabad &amp; Secunderabad, Telangana, India</span>
+          </div>
         </div>
       </div>
     </footer>

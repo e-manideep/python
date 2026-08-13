@@ -44,6 +44,8 @@ const CAPABILITY_MATRIX: { capability: string; trellis: Capability; enterprise: 
   { capability: "Developer / builder portfolio intelligence", trellis: "yes", enterprise: "no", midmarket: "no", facilityMgmt: "no" },
   { capability: "Unified owner + resident + vendor + builder + ops portal", trellis: "yes", enterprise: "partial", midmarket: "yes", facilityMgmt: "no" },
   { capability: "Single transparent cross-portfolio performance score", trellis: "yes", enterprise: "no", midmarket: "no", facilityMgmt: "no" },
+  { capability: "Consumer vendor marketplace with rated, direct booking", trellis: "yes", enterprise: "no", midmarket: "partial", facilityMgmt: "no" },
+  { capability: "Demand-side listings that fill the vacancy Services creates", trellis: "yes", enterprise: "no", midmarket: "no", facilityMgmt: "no" },
 ];
 
 const OBJECTIONS = [

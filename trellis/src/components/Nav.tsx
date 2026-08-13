@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
 import clsx from "clsx";
 import { PersonaSwitcher } from "./PersonaSwitcher";
-import { useTrellisStore } from "../lib/store";
+import { PERSONAS, useTrellisStore } from "../lib/store";
+import { isLoggedIn, loggedInRoles } from "../lib/auth";
 
 const LINKS_BY_ROLE: Record<string, { to: string; label: string }[]> = {
   investor: [
@@ -26,9 +27,11 @@ const LINKS_BY_ROLE: Record<string, { to: string; label: string }[]> = {
 };
 
 export function Nav() {
-  const role = useTrellisStore((s) => s.selectedPersonaId);
-  const roleKey = role.replace("persona-", "");
-  const links = LINKS_BY_ROLE[roleKey] ?? [];
+  const selectedPersonaId = useTrellisStore((s) => s.selectedPersonaId);
+  useTrellisStore((s) => s.sessionVersion); // re-render on every login/logout, even same-id ones
+  const selected = PERSONAS.find((p) => p.id === selectedPersonaId);
+  const activeRole = selected && isLoggedIn(selected.role) ? selected.role : loggedInRoles()[0];
+  const links = activeRole ? (LINKS_BY_ROLE[activeRole] ?? []) : [];
 
   return (
     <header className="sticky top-0 z-40 border-b border-ink-100 bg-white/90 backdrop-blur">

@@ -1,7 +1,9 @@
 import { Route, Routes } from "react-router-dom";
 import { Nav } from "./components/Nav";
 import { Footer } from "./components/Footer";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Landing } from "./pages/Landing";
+import { Login } from "./pages/Login";
 import { Portfolio } from "./pages/Portfolio";
 import { PropertyDetail } from "./pages/PropertyDetail";
 import { Resident } from "./pages/Resident";
@@ -20,16 +22,17 @@ function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Landing />} />
-          <Route path="/portfolio" element={<Portfolio />} />
-          <Route path="/property/:id" element={<PropertyDetail />} />
-          <Route path="/resident" element={<Resident />} />
-          <Route path="/vendor" element={<Vendor />} />
-          <Route path="/ops" element={<Ops />} />
-          <Route path="/builder" element={<Builder />} />
+          <Route path="/login" element={<Login />} />
           <Route path="/services" element={<Services />} />
           <Route path="/listings" element={<Listings />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/insights" element={<Insights />} />
+          <Route path="/portfolio" element={<ProtectedRoute role="investor"><Portfolio /></ProtectedRoute>} />
+          <Route path="/property/:id" element={<ProtectedRoute role="any"><PropertyDetail /></ProtectedRoute>} />
+          <Route path="/resident" element={<ProtectedRoute role="resident"><Resident /></ProtectedRoute>} />
+          <Route path="/vendor" element={<ProtectedRoute role="vendor"><Vendor /></ProtectedRoute>} />
+          <Route path="/ops" element={<ProtectedRoute role="ops"><Ops /></ProtectedRoute>} />
+          <Route path="/builder" element={<ProtectedRoute role="builder"><Builder /></ProtectedRoute>} />
+          <Route path="/marketplace" element={<ProtectedRoute role="resident"><Marketplace /></ProtectedRoute>} />
+          <Route path="/insights" element={<ProtectedRoute role="any"><Insights /></ProtectedRoute>} />
         </Routes>
       </main>
       <Footer />

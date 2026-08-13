@@ -7,10 +7,12 @@ record for leasing, maintenance, make-ready/interiors, compliance and community,
 by one transparent performance number, the **Trellis Score**.
 
 This repo is a real, runnable product, not a mockup: a seeded (but fully computed, not
-hardcoded) dataset of 24 properties / ~2,000 units across Hyderabad and Secunderabad drives every
+hardcoded) dataset of 24 properties / ~2,250 units across Hyderabad and Secunderabad drives every
 number on every screen — financials, occupancy, scores, and AI recommendations are all
 derived live from the same underlying operating data, so nothing shown is fabricated
-independently of anything else.
+independently of anything else. Five stakeholders — owner/investor, resident, vendor, field
+ops, and developer — each sign into their own account (see [Accounts &amp; access](#accounts--access)
+below) and see only their own side of the same live data.
 
 ## The problem, with sources (not invented)
 
@@ -101,8 +103,8 @@ are implemented with real, derived logic — not additional hardcoded numbers:
 
 ## Product surfaces
 
-One deterministic dataset, five stakeholder experiences, switchable live from the top-right
-persona menu — the same person can walk through every side of the platform in one sitting:
+One deterministic dataset, five stakeholder experiences, each behind its own login — the same
+person can sign into every account in one sitting to walk through the whole platform:
 
 - **Owner / Investor Portfolio** (`/portfolio`) — AUM, blended NOI, occupancy and score
   trends, city breakdown, lease expiration ladder, 5-year capital plan, sustainability index,
@@ -112,6 +114,10 @@ persona menu — the same person can walk through every side of the platform in 
   sustainability, maintenance history, vendors, compliance, a T12 statement with CSV export,
   and community feed.
 - **Resident Portal** (`/resident`) — pay rent, raise a maintenance ticket, community feed.
+- **Vendor Marketplace** (`/marketplace`) — residents browse every trade Trellis manages
+  (plumbers, electricians, interior designers and more) by real rating/SLA/cost, book a
+  maintenance vendor directly (creates a real, Ops-visible work order), or request a quote
+  from an interior designer for a project engagement.
 - **Vendor Portal** (`/vendor`) — job queue, SLA, mark work in progress/completed, earnings.
 - **Field Ops Console** (`/ops`) — city-wide dispatch kanban with live vendor assignment.
 - **Builder / Developer Portal** (`/builder`) — a developer channel-partner's view of their
@@ -120,10 +126,26 @@ persona menu — the same person can walk through every side of the platform in 
   real, sourced ROI model.
 - **Trellis Intelligence** (`/insights`) — the full, filterable recommendation feed across
   all 9 categories.
+- **Browse Listings** (`/listings`) — the demand side: every vacant unit across the portfolio,
+  filterable/sortable, with a shortlist and a visit-request flow — the public storefront that
+  Property Services' make-ready spend is meant to fill.
 
-Interactive actions (pay rent, raise/advance a ticket) persist to `localStorage` and update
-every portal that reads that data — there's no backend in this MVP by design (see
-Architecture).
+Interactive actions (pay rent, raise/book a ticket, shortlist a listing) persist to
+`localStorage` and update every portal that reads that data — there's no backend in this MVP
+by design (see Architecture).
+
+## Accounts & access
+
+There is no shared "god mode" toggle. Each of the five stakeholder roles is a separate demo
+account with its own email/password, validated against real credentials (wrong password
+fails, correct one succeeds) and its own session stored independently in the browser —
+logging into the resident account doesn't touch the investor account's session, the same way
+separate accounts would in a real product. `/login` shows the demo credentials for every role
+directly on screen (this is a self-contained frontend demo, not a production auth system —
+see Architecture), and route guards (`src/components/ProtectedRoute.tsx`) redirect any portal
+route to `/login` if that specific role isn't signed in. `/`, `/listings` and `/services` stay
+public, matching how a real marketing site works. "Reset demo data & sign out" in the footer
+clears all interactive state and every session in one click, for restarting a walkthrough.
 
 ## Architecture
 
@@ -151,11 +173,14 @@ src/
     financialStatements.ts  Rent Roll + T12 statement builders
     builderSelectors.ts   Builder/Developer Portal data slices
     aiInsights.ts        Trellis Intelligence: 9 explainable insight categories
+    listings.ts           vacant-unit listing selector (reuses Trellis Score + make-ready)
+    auth.ts               demo credential set + per-role session storage/validation
     store.ts             zustand store: static dataset + persisted interactive overlay
     portfolioSelectors.ts, format.ts, dates.ts, scoreColor.ts, storage.ts, csv.ts
-  components/        design system primitives, charts, nav, persona switcher
-  pages/             Landing, Portfolio, PropertyDetail, Resident, Vendor, Ops, Builder,
-                     Services, Insights
+  components/        design system primitives, charts, Nav, Footer, PersonaSwitcher,
+                     ProtectedRoute (route-level auth guard)
+  pages/             Landing, Login, Portfolio, PropertyDetail, Resident, Vendor, Ops,
+                     Builder, Services, Marketplace, Listings, Insights
 scripts/
   sanity.ts          data-integrity + consistency check (see below)
 ```
@@ -198,7 +223,11 @@ verifies:
   demo data is a dead feature, so the check flags any of the 9 categories that come back
   empty (and this caught real threshold-calibration issues during development).
 - **Vendor stats** are aggregated from actual completed work orders, not fabricated
-  separately from the tickets they claim to summarize.
+  separately from the tickets they claim to summarize — with one disclosed exception:
+  Interior Design vendors do project engagements, not SLA tickets, so there's no matching
+  work-order category to aggregate from; their stats are seeded from the same real make-ready
+  cost range (`src/lib/propertyServices.ts`) used for the make-ready ROI model elsewhere,
+  not an unrelated invented number. See `src/data/seed.ts` for exactly where this happens.
 - **CSV export smoke test** — the export path actually produces well-formed CSV.
 
 ## Market & data notes

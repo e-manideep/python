@@ -94,12 +94,19 @@ const DEFAULT_MUTATIONS: MutationState = {
   workOrderOverrides: {},
   newWorkOrders: [],
   paidPaymentIds: [],
-  selectedPersonaId: "persona-investor",
+  selectedPersonaId: "", // no persona is active until a real login happens
 };
 
 interface TrellisStore extends MutationState {
   workOrders: WorkOrder[];
   rentPayments: RentPayment[];
+  /** Bumped on every setPersona call, even ones that set the same id (e.g. logging back
+   *  into the account that happens to match the default). Components that need to react
+   *  to "something about the session changed" subscribe to this instead of relying on
+   *  selectedPersonaId's value actually differing — a plain Zustand primitive selector
+   *  skips re-renders when the new value === the old one, which silently no-ops the
+   *  common case of the very first login matching a stale/default id. */
+  sessionVersion: number;
   setPersona: (id: string) => void;
   advanceWorkOrder: (id: string, status: WorkOrder["status"], vendorId?: string | null) => void;
   raiseTicket: (input: { propertyId: string; unitId: string | null; category: WorkOrderCategory; description: string; priority: WorkOrderPriority }) => void;
@@ -127,9 +134,10 @@ const persisted = loadJSON<MutationState>("mutations", DEFAULT_MUTATIONS);
 export const useTrellisStore = create<TrellisStore>((set, get) => ({
   ...persisted,
   ...computeDerived(persisted),
+  sessionVersion: 0,
 
   setPersona: (id) => {
-    set({ selectedPersonaId: id });
+    set((s) => ({ selectedPersonaId: id, sessionVersion: s.sessionVersion + 1 }));
     persist(get());
   },
 
